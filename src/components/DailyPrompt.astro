@@ -1,0 +1,207 @@
+---
+/**
+ * DailyPrompt — bespoke self-dev signature module.
+ *
+ * A daily reflection prompt pulled deterministically from a curated set
+ * based on the current date (SSR-stable, no JS needed for the base render).
+ * Each prompt is a single journalling question for the reader's practice log.
+ *
+ * Renders as a torn index-card taped to the notebook margin — graphite
+ * lines, handwritten-weight font, ember corner tab. Pure CSS, no runtime JS.
+ * The "write" CTA links to /blog/ so it always has a destination.
+ *
+ * Identity signal: ONLY a practice/self-dev blog would have this module.
+ */
+
+const prompts = [
+  "What one small thing will you do today that future-you will be glad you did?",
+  "Name the habit you've been avoiding. What's the smallest version of it?",
+  "Where did your attention go today that you didn't choose?",
+  "What did you finish recently that you kept putting off? How did it feel?",
+  "Which of your current systems is working silently in the background?",
+  "What belief is making a hard thing feel harder than it is?",
+  "If you repeated today exactly for a year, where would you end up?",
+  "What are you tolerating that a small decision could end?",
+  "What have you learned this week that changed how you'll act next week?",
+  "Name one thing you're doing out of habit that you'd drop if you thought about it.",
+  "What's the gap between who you are today and who you want to be in one year?",
+  "Which relationship in your life could use one small intentional act this week?",
+  "What would you do differently if you knew effort compounds over five years?",
+  "What are you measuring? What are you ignoring that matters more?",
+  "Write the headline for the version of yourself who followed through.",
+  "What does 'good enough' look like for the thing you're perfecting to death?",
+  "Which skill, if you spent 20 minutes on it daily, would change everything?",
+  "What's one thing you said you'd start 'when conditions are right'?",
+  "What would you tell someone else who is in the same spot you're in now?",
+  "What's the cost of not deciding on the thing you've been sitting on?",
+  "Who are you becoming by doing what you're doing right now?",
+  "What's one default you could change that would improve every day?",
+  "When did you last do something for the first time?",
+  "What small act of discipline made you feel proud this week?",
+  "What's one thing you could stop doing that would free up energy for what matters?",
+  "If your habits were your values made visible, what would they say about you?",
+  "What are you building in the quiet hours that no one else can see yet?",
+  "Where is discomfort pointing you toward growth?",
+  "What single question, if answered honestly, would change something important?",
+  "What is your practice log NOT capturing that you should start tracking?",
+]
+
+// Deterministic daily pick — SSR and hydration agree, no Math.random.
+const daysSinceEpoch = Math.floor(Date.now() / 86_400_000)
+const prompt = prompts[daysSinceEpoch % prompts.length]
+
+// Next prompt preview (tomorrow's)
+const nextPrompt = prompts[(daysSinceEpoch + 1) % prompts.length]
+
+const today = new Date()
+const dateLabel = today.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+---
+
+<aside class="daily-prompt" aria-label="Today's reflection prompt">
+  <div class="dp-tab" aria-hidden="true">Today</div>
+  <div class="dp-card">
+    <p class="dp-label mono">Prompt · {dateLabel}</p>
+    <blockquote class="dp-question">
+      <span class="dp-mark" aria-hidden="true">"</span>{prompt}
+    </blockquote>
+    <div class="dp-foot">
+      <a class="dp-cta" href="/blog/">Open your log →</a>
+      <details class="dp-next">
+        <summary class="dp-next-toggle mono">Tomorrow's prompt</summary>
+        <p class="dp-next-text">{nextPrompt}</p>
+      </details>
+    </div>
+  </div>
+  <div class="dp-lines" aria-hidden="true"></div>
+</aside>
+
+<style>
+  .daily-prompt {
+    position: relative;
+    margin-block: clamp(1.5rem, 4vw, 2.5rem);
+    /* slight tilt — index card taped to the notebook */
+    transform: rotate(0.4deg);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .daily-prompt { transform: none; }
+  }
+
+  /* Corner tab — ember ribbon folded over the top-left corner */
+  .dp-tab {
+    position: absolute;
+    top: -1px;
+    left: clamp(1.5rem, 5vw, 2.5rem);
+    padding: 2px 10px;
+    background: var(--ember);
+    color: var(--paper);
+    font-family: var(--font-utility);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    clip-path: polygon(0 0, 100% 0, 100% 80%, 50% 100%, 0 80%);
+    padding-bottom: 6px;
+    z-index: 1;
+  }
+
+  /* Index card — graphite-lined notecard texture */
+  .dp-card {
+    background: var(--paper);
+    border: 1px solid var(--rule-strong);
+    box-shadow:
+      2px 3px 0 color-mix(in oklab, var(--rule-strong) 70%, transparent),
+      0 1px 6px color-mix(in oklab, var(--ink) 6%, transparent);
+    padding: clamp(1.5rem, 4vw, 2rem) clamp(1.25rem, 3vw, 1.75rem) clamp(1.25rem, 3vw, 1.5rem);
+    padding-top: clamp(2rem, 5vw, 2.5rem); /* clear the corner tab */
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Graphite ruled lines across the card background */
+  .dp-lines {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent calc(1.75rem - 1px),
+      color-mix(in oklab, var(--rule) 50%, transparent) calc(1.75rem - 1px),
+      color-mix(in oklab, var(--rule) 50%, transparent) 1.75rem
+    );
+    background-position: 0 2rem;
+    z-index: 0;
+  }
+  .dp-card > * { position: relative; z-index: 1; }
+
+  .dp-label {
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    margin: 0 0 1rem;
+  }
+
+  .dp-question {
+    margin: 0 0 1.25rem;
+    font-family: var(--font-display);
+    font-weight: 520;
+    font-size: clamp(1.1rem, 2.8vw, 1.35rem);
+    line-height: 1.45;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    font-style: italic;
+  }
+  .dp-mark {
+    color: var(--ember);
+    font-size: 1.5em;
+    line-height: 0;
+    margin-right: 2px;
+    font-style: normal;
+  }
+
+  .dp-foot {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 0.75rem 1.5rem;
+  }
+
+  .dp-cta {
+    font-family: var(--font-utility);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    color: var(--brand);
+    text-decoration: none;
+    border-bottom: 1px solid color-mix(in oklab, var(--brand) 35%, transparent);
+    padding-bottom: 1px;
+    transition: border-color var(--dur-fast) ease, color var(--dur-fast) ease;
+  }
+  .dp-cta:hover { color: var(--ember); border-color: var(--ember); }
+  @media (prefers-reduced-motion: reduce) { .dp-cta { transition: none; } }
+
+  .dp-next { flex: 1; min-width: 0; }
+  .dp-next-toggle {
+    cursor: pointer;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    list-style: none;
+    user-select: none;
+  }
+  .dp-next-toggle::-webkit-details-marker { display: none; }
+  .dp-next-toggle::before { content: '+ '; color: var(--brand); }
+  details[open] .dp-next-toggle::before { content: '− '; }
+  .dp-next-toggle:hover { color: var(--brand); }
+
+  .dp-next-text {
+    margin: 0.5rem 0 0;
+    font-family: var(--font-body);
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--ink-mute);
+    font-style: italic;
+  }
+</style>

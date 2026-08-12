@@ -1,4 +1,5 @@
 ---
+import DailyPrompt from '~/components/DailyPrompt.astro'
 import SeriesSpine from '~/components/SeriesSpine.astro'
 /**
  * /  — practicelog homepage ("Field Log" front page).
@@ -128,6 +129,9 @@ const jsonLd = {
       </a>
     )}
   </section>
+
+  {/* ── Daily reflection prompt — the practice log's daily anchor ──────── */}
+  <DailyPrompt />
 
   {/* ── Signature: the streak, pasted into the margin like a habit chart ── */}
   <section class="entry entry-streak" aria-label="Practice streak">
