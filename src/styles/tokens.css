@@ -1,0 +1,240 @@
+/*
+ * tokens.css — practicelog "Field Log" identity (self-dev blog, 2026-08-12).
+ *
+ * Grounded in the subject's own material: the practice log — the repeated mark,
+ * the chain you don't break, the graph-paper habit tracker. Warm-oatmeal paper,
+ * sap-green growth accent, warm-ember "earned mark", deep forest ink.
+ *
+ * Deliberately DISTINCT from oriz-blog ("Signal Press", amber/serif/dark) and
+ * from the indigo Stripe/Linear sister apps. Per the design-diversity rule each
+ * site owns its identity.
+ *
+ * Every --color-* / legacy alias is preserved so chrome/legal/Footer components
+ * compile unchanged. Theme modes:
+ *   :root                              → light (default, warm paper)
+ *   [data-theme="dark"]                → deep-forest night log
+ *   @media (prefers-color-scheme:dark) → dark, UNLESS [data-theme="light"]
+ *   [data-theme="sepia"]               → warmer paper variant
+ *   [data-theme="hc"]                  → pure black/white high contrast
+ */
+:root {
+  color-scheme: light;
+
+  /* ── Field-Log palette (light default) ─────────────────────────────────
+     Warm oatmeal paper + deep forest ink. Sap green = the deliberate growth
+     mark (links, active). Warm ember = the ONE earned mark (streak-complete,
+     "today"). Clay hairlines. All --color-* aliases inherit this. */
+  --brand: #2f6b48; /* sap green — links, active, primary */
+  --brand-soft: #e4efe4; /* pale green tint — hover, chips */
+  --ember: #d9622b; /* warm ember — the earned mark ("today", streak done) */
+  --success: #2f6b48;
+  --danger-color: #b83a1e;
+
+  --paper: #fbf7f0; /* warm oatmeal (page bg) */
+  --paper-2: #f4ecdd; /* elevated warm panel */
+  --surface: var(--paper-2);
+  --ink: #1c2321; /* deep forest-charcoal text */
+  --ink-mute: #6b7169; /* secondary sage-grey */
+  --rule: #ded5c4; /* soft clay hairline */
+  --rule-strong: #c7bba3; /* heavier masthead rule */
+
+  /* canonical accent — everything routes through --accent.
+     --cobalt kept ONLY as a back-compat alias → --accent. */
+  --accent: var(--brand);
+  --accent-soft: var(--brand-soft);
+  --cobalt: var(--accent);
+  --brand-tint: var(--brand-soft);
+  --sage: var(--brand);
+  --vermilion: var(--ember);
+  --highlighter: var(--ember);
+
+  /* content-vertical marker colours — Field-Log strata. Thin rules / kicker
+     dots only, never the page accent. Habits · Focus · Mindset · Systems · Log. */
+  --v-dev: #2f6b48; /* systems (green) */
+  --v-finance: #b07d2b; /* focus (ochre) */
+  --v-culture: #7a5c9e; /* mindset (plum) */
+  --v-health: #2f8f8a; /* wellbeing (teal) */
+  --v-personal: #d9622b; /* the log / habits (ember) */
+
+  /* semantic passthroughs */
+  --color-bg: var(--paper);
+  --color-fg: var(--ink);
+  --color-accent: var(--brand);
+  --color-accent-fg: #fbf7f0;
+  --color-sage: var(--brand);
+  --color-muted: var(--ink-mute);
+  --color-border: var(--rule);
+  --color-bg-soft: var(--paper-2);
+  --color-bg-muted: var(--paper-2);
+  --color-prose: var(--ink);
+  --color-fg-muted: var(--ink-mute);
+  --color-fg-soft: var(--ink-mute);
+
+  /* color alias layer (chrome components read these) */
+  --color-brand-indigo: var(--brand); /* name kept for compatibility */
+  --color-brand-indigo-soft: var(--brand-soft);
+  --color-brand-success: var(--success);
+  --color-brand-danger: var(--danger-color);
+  --color-neutral-0: #fbf7f0;
+  --color-neutral-50: #f4ecdd;
+  --color-neutral-100: #ede3d0;
+  --color-neutral-200: #ded5c4;
+  --color-neutral-300: #c7bba3;
+  --color-neutral-500: #6b7169;
+  --color-neutral-700: #3c433d;
+  --color-neutral-900: #1c2321;
+  --color-neutral-1000: #0e120f;
+  --color-paper: var(--paper);
+  --color-paper-2: var(--paper-2);
+  --color-ink: var(--ink);
+  --color-ink-mute: var(--ink-mute);
+  --color-rule: var(--rule);
+
+  /* ── type ───────────────────────────────────────────────────────────
+     Font families are declared ONCE, in global.css @theme. Not duplicated
+     here to avoid last-write-wins drift.
+     ─────────────────────────────────────────────────────────────────── */
+
+  --text-2xs: 10px;
+  --text-xs: 11px;
+  --text-sm: 13px;
+  --text-base: 15px;
+  --text-md: 17px;
+  --text-lg: 20px;
+  --text-xl: 24px;
+  --text-2xl: 32px;
+  --text-3xl: 48px;
+
+  /* spacing — 8 steps */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* motion — 3 durations + 3 easings */
+  --dur-fast: 120ms;
+  --dur-base: 200ms;
+  --dur-slow: 420ms;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+
+  /* breakpoints */
+  --bp-sm: 480px;
+  --bp-md: 768px;
+  --bp-lg: 1024px;
+  --bp-xl: 1440px;
+
+  /* radii + containers — soft, humane corners (not the newspaper zero-radius) */
+  --radius-card: 12px;
+  --radius-button: 999px;
+  --container-page: 1100px;
+}
+
+/* ── DARK — system preference, unless user forced light ─────────────── */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --brand: #6bbd8c; /* brightened sap green for night log */
+    --brand-soft: #1b2a22;
+    --ember: #f0864a;
+    --success: #6bbd8c;
+    --danger-color: #f0806a;
+    --paper: #14181a; /* deep forest night */
+    --paper-2: #1c2225;
+    --ink: #ece6da; /* warm off-white */
+    --ink-mute: #96a097;
+    --rule: #2a322e;
+    --rule-strong: #3a443e;
+    --v-dev: #6bbd8c;
+    --v-finance: #d8b062;
+    --v-culture: #b39ad4;
+    --v-health: #5fc4bd;
+    --v-personal: #f0864a;
+    --color-accent-fg: #14181a;
+    --color-neutral-0: #14181a;
+    --color-neutral-50: #1c2225;
+    --color-neutral-100: #232a2c;
+    --color-neutral-200: #2a322e;
+    --color-neutral-300: #3a443e;
+    --color-neutral-500: #96a097;
+    --color-neutral-700: #c3ccc0;
+    --color-neutral-900: #ece6da;
+  }
+}
+
+/* ── DARK — explicit user override, wins over system ────────────────── */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --brand: #6bbd8c;
+  --brand-soft: #1b2a22;
+  --ember: #f0864a;
+  --success: #6bbd8c;
+  --danger-color: #f0806a;
+  --paper: #14181a;
+  --paper-2: #1c2225;
+  --ink: #ece6da;
+  --ink-mute: #96a097;
+  --rule: #2a322e;
+  --rule-strong: #3a443e;
+  --v-dev: #6bbd8c;
+  --v-finance: #d8b062;
+  --v-culture: #b39ad4;
+  --v-health: #5fc4bd;
+  --v-personal: #f0864a;
+  --color-accent-fg: #14181a;
+  --color-neutral-0: #14181a;
+  --color-neutral-50: #1c2225;
+  --color-neutral-100: #232a2c;
+  --color-neutral-200: #2a322e;
+  --color-neutral-300: #3a443e;
+  --color-neutral-500: #96a097;
+  --color-neutral-700: #c3ccc0;
+  --color-neutral-900: #ece6da;
+}
+
+/* ── SEPIA — warmer paper variant ───────────────────────────────────── */
+:root[data-theme='sepia'] {
+  color-scheme: light;
+  --brand: #2f6b48;
+  --brand-soft: #e7ddc6;
+  --ember: #cf5b26;
+  --paper: #f4ead2;
+  --paper-2: #ece0c4;
+  --ink: #2e2a20;
+  --ink-mute: #756c56;
+  --rule: #d9cba9;
+  --color-accent-fg: #f4ead2;
+  --color-fg-soft: color-mix(in oklab, var(--ink) 55%, var(--paper));
+  --color-neutral-50: #f4ead2;
+  --color-neutral-100: #ece0c4;
+  --color-neutral-200: #d9cba9;
+  --color-neutral-500: #756c56;
+  --color-neutral-700: #514a38;
+  --color-neutral-900: #2e2a20;
+}
+
+/* ── HIGH-CONTRAST — pure black/white, hard borders ─────────────────── */
+:root[data-theme='hc'] {
+  color-scheme: light;
+  --brand: #0a5a2e;
+  --brand-soft: #dff2e5;
+  --ember: #b3410f;
+  --paper: #ffffff;
+  --paper-2: #ffffff;
+  --ink: #000000;
+  --ink-mute: #24302a;
+  --rule: #000000;
+  --color-accent-fg: #ffffff;
+  --color-fg-soft: #24302a;
+  --color-neutral-50: #ffffff;
+  --color-neutral-100: #ffffff;
+  --color-neutral-200: #000000;
+  --color-neutral-500: #24302a;
+  --color-neutral-700: #000000;
+  --color-neutral-900: #000000;
+}
