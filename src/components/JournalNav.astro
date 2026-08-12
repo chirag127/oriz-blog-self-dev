@@ -1,0 +1,296 @@
+---
+/*
+ * JournalNav — the whole site navigation, folded behind ONE small menu button.
+ *
+ * Journal archetype: no top nav bar, no rail of links. A single "index" tab
+ * (top-right, styled like a bookmark ribbon) opens a right-side slide-in drawer
+ * holding every route + search + family links. Pure CSS toggle (hidden
+ * checkbox) with a small JS layer for focus-trap, Esc, and inert on mobile.
+ *
+ * Replaces the shared Header nav + Sidebar + BottomBar skeleton.
+ */
+import HeaderControls from '~/components/HeaderControls.tsx'
+import MultiSearch from '~/components/MultiSearch.tsx'
+
+const path = Astro.url.pathname
+const is = (p: string, exact = false) =>
+  exact ? path === p : path.startsWith(p)
+
+const entries = [
+  { href: '/', label: 'Front page', active: is('/', true) },
+  { href: '/blog/', label: 'Every entry', active: is('/blog') },
+  { href: '/series/', label: 'Threads', active: is('/series') },
+  { href: '/tags/', label: 'Topics', active: is('/tags') },
+  { href: '/archive/', label: 'Archive', active: is('/archive') },
+  { href: '/now/', label: 'Now', active: is('/now') },
+  { href: '/about/', label: 'About', active: is('/about') },
+]
+---
+
+<input type="checkbox" id="jn-toggle" class="jn-toggle" hidden aria-controls="jn-drawer" />
+
+<button
+  type="button"
+  class="jn-open"
+  data-jn-toggle
+  aria-controls="jn-drawer"
+  aria-expanded="false"
+  aria-label="Open index"
+>
+  <span class="jn-open-lines" aria-hidden="true"><span></span><span></span><span></span></span>
+  <span class="jn-open-word">Index</span>
+</button>
+
+<button type="button" class="jn-scrim" data-jn-close aria-label="Close index"></button>
+
+<aside id="jn-drawer" class="jn-drawer" aria-label="Site index" aria-hidden="true">
+  <div class="jn-head">
+    <span class="jn-head-word">Index</span>
+    <button type="button" class="jn-close" data-jn-close aria-label="Close index">Close</button>
+  </div>
+
+  <div class="jn-search"><MultiSearch client:idle /></div>
+
+  <div class="jn-controls"><HeaderControls client:idle /></div>
+
+  <nav class="jn-nav" aria-label="Primary">
+    <ol class="jn-list">
+      {entries.map((e, i) => (
+        <li>
+          <a href={e.href} aria-current={e.active ? 'page' : undefined}>
+            <span class="jn-num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+            <span class="jn-label">{e.label}</span>
+          </a>
+        </li>
+      ))}
+    </ol>
+  </nav>
+
+  <div class="jn-foot">
+    <a href="https://oriz.in" class="jn-foot-link">The oriz family</a>
+    <a href="https://github.com/chirag127/oriz-blog-self-dev" class="jn-foot-link" rel="me">Source</a>
+    <a href="/rss.xml" class="jn-foot-link">RSS</a>
+  </div>
+</aside>
+
+<script>
+  const input = document.querySelector<HTMLInputElement>('#jn-toggle')
+  const drawer = document.querySelector<HTMLElement>('#jn-drawer')
+  const openers = Array.from(document.querySelectorAll<HTMLElement>('[data-jn-toggle]'))
+  const closers = Array.from(document.querySelectorAll<HTMLElement>('[data-jn-close]'))
+  if (input && drawer) {
+    let returnFocus: HTMLElement | null = null
+    const focusables = () =>
+      Array.from(
+        drawer.querySelectorAll<HTMLElement>('a[href], button, input, [tabindex]:not([tabindex="-1"])'),
+      ).filter((el) => !el.hasAttribute('disabled') && el.offsetParent !== null)
+
+    const sync = () => {
+      const open = input.checked
+      document.documentElement.dataset.indexOpen = open ? 'true' : 'false'
+      drawer.setAttribute('aria-hidden', String(!open))
+      drawer.toggleAttribute('inert', !open)
+      document.body.style.overflow = open ? 'hidden' : ''
+      openers.forEach((o) => {
+        o.setAttribute('aria-expanded', String(open))
+        o.setAttribute('aria-label', open ? 'Close index' : 'Open index')
+      })
+      if (open) {
+        returnFocus = document.activeElement as HTMLElement | null
+        focusables()[0]?.focus()
+      } else {
+        returnFocus?.focus()
+        returnFocus = null
+      }
+    }
+    const toggle = () => {
+      input.checked = !input.checked
+      sync()
+    }
+    const close = () => {
+      if (!input.checked) return
+      input.checked = false
+      sync()
+    }
+    openers.forEach((o) => o.addEventListener('click', toggle))
+    closers.forEach((c) => c.addEventListener('click', close))
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') return close()
+      if (e.key !== 'Tab' || !input.checked) return
+      const f = focusables()
+      if (f.length === 0) return
+      const first = f[0]
+      const last = f[f.length - 1]
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault()
+        last.focus()
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault()
+        first.focus()
+      }
+    })
+    sync()
+  }
+</script>
+
+<style>
+  .jn-toggle { position: absolute; opacity: 0; pointer-events: none; }
+
+  /* The one visible control: a bookmark-ribbon tab pinned top-right. */
+  .jn-open {
+    position: fixed;
+    top: 0;
+    right: clamp(1rem, 5vw, 3rem);
+    z-index: 60;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 0.9rem 0.7rem 1rem;
+    background: var(--ember);
+    color: var(--paper);
+    border: 0;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+    box-shadow: 0 3px 8px color-mix(in oklab, var(--ink) 22%, transparent);
+    cursor: pointer;
+    transition: transform var(--dur-fast) var(--ease-out);
+  }
+  .jn-open:hover { transform: translateY(2px); }
+  .jn-open:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+  .jn-open-lines { display: flex; flex-direction: column; gap: 3px; }
+  .jn-open-lines span { display: block; width: 16px; height: 2px; background: currentColor; border-radius: 1px; }
+  .jn-open-word {
+    font-family: var(--font-utility);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+  }
+
+  .jn-scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 64;
+    border: 0;
+    padding: 0;
+    background: color-mix(in oklab, var(--ink) 42%, transparent);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity var(--dur-base) var(--ease-out), visibility var(--dur-base);
+    cursor: pointer;
+  }
+
+  .jn-drawer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 65;
+    width: min(360px, 88vw);
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    padding: clamp(1.5rem, 4vw, 2.25rem);
+    background: var(--paper-2);
+    border-left: 1px solid var(--rule-strong);
+    box-shadow: -12px 0 40px color-mix(in oklab, var(--ink) 18%, transparent);
+    /* lined paper inside the drawer too, faint */
+    background-image: repeating-linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent calc(1.9rem - 1px),
+      color-mix(in oklab, var(--rule) 60%, transparent) calc(1.9rem - 1px),
+      color-mix(in oklab, var(--rule) 60%, transparent) 1.9rem
+    );
+    background-position: 0 2.2rem;
+    transform: translateX(100%);
+    transition: transform var(--dur-base) var(--ease-out);
+    overflow-y: auto;
+  }
+
+  #jn-toggle:checked ~ .jn-drawer,
+  html[data-index-open='true'] .jn-drawer { transform: translateX(0); }
+  #jn-toggle:checked ~ .jn-scrim,
+  html[data-index-open='true'] .jn-scrim { opacity: 1; visibility: visible; }
+
+  .jn-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid var(--ink);
+  }
+  .jn-head-word {
+    font-family: var(--font-display);
+    font-size: 1.6rem;
+    font-weight: 560;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+  .jn-close {
+    background: transparent;
+    border: 0;
+    padding: 0.25rem 0;
+    color: var(--ink-mute);
+    font-family: var(--font-utility);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+  .jn-close:hover { color: var(--ember); }
+
+  .jn-search :global(input) { width: 100%; }
+
+  .jn-controls { display: flex; justify-content: flex-end; }
+
+  .jn-nav { flex: 1; }
+  .jn-list { list-style: none; margin: 0; padding: 0; }
+  .jn-list li + li { border-top: 1px solid color-mix(in oklab, var(--rule) 70%, transparent); }
+  .jn-list a {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    padding: 0.55rem 0;
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .jn-num {
+    font-family: var(--font-utility);
+    font-size: 11px;
+    color: var(--ink-mute);
+    min-width: 1.6em;
+  }
+  .jn-label {
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+  .jn-list a:hover .jn-label { color: var(--ember); }
+  .jn-list a[aria-current='page'] .jn-label { color: var(--brand); }
+  .jn-list a[aria-current='page'] .jn-num { color: var(--brand); }
+
+  .jn-foot {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--rule);
+  }
+  .jn-foot-link {
+    font-family: var(--font-utility);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    text-decoration: none;
+  }
+  .jn-foot-link:hover { color: var(--ember); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .jn-open, .jn-drawer, .jn-scrim { transition: none; }
+  }
+</style>

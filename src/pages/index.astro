@@ -64,19 +64,9 @@ inProgress.sort((a, b) => b.latest.valueOf() - a.latest.valueOf())
 
 const cats = await getCategoriesWithCounts()
 
-const now = new Date()
-const dateline = now.toLocaleDateString('en-GB', {
-  weekday: 'long',
-  day: 'numeric',
-  month: 'long',
-  year: 'numeric',
-})
-
 // Streak-grid model. The blog began 2024 → count days since as the "streak".
 // The grid draws the last N days as graph-paper cells; a handful are "missed"
 // (honest — nobody has a perfect chain), and the final cell is TODAY (ember).
-const streakStart = new Date('2024-01-01')
-const streak = Math.floor((now.valueOf() - streakStart.valueOf()) / 86_400_000)
 const GRID_COLS = 21
 const GRID_ROWS = 7
 const CELLS = GRID_COLS * GRID_ROWS
@@ -120,213 +110,161 @@ const jsonLd = {
   title="practicelog — small reps beat motivation"
   description={SITE_CONFIG.description}
   jsonLd={jsonLd}
-  hideSidebar
 >
-  <div class="container-page">
-    {/* ── Hero: thesis (left) + living streak grid (right) ─────────────── */}
-    <section class="hero" aria-labelledby="thesis">
-      <div class="hero-thesis">
-        <p class="dateline mono">
-          <span class="dateline-day">Day {streak.toLocaleString()}</span>
-          <span class="dateline-sep" aria-hidden="true">·</span>
-          <span>{dateline}</span>
-        </p>
-        <h1 id="thesis" class="thesis">
-          Small reps beat<br /><span class="thesis-em">motivation.</span>
-        </h1>
-        <p class="thesis-sub">
-          A working log of habits, focus, and follow-through — the practices that
-          hold when the mood to do them is gone. Written from experience, tested
-          in public.
-        </p>
-        {lead && (
-          <a class="hero-cta" href={`/blog/${lead.id}`}>
-            Start with the latest
-            <span class="hero-cta-arrow" aria-hidden="true">→</span>
-          </a>
-        )}
-      </div>
-
-      <div class="hero-grid-wrap" aria-hidden="true">
-        <div class="streak-legend mono">
-          <span class="streak-legend-count">{doneCount}</span> days marked
-        </div>
-        <div class="streak-grid" style={`--cols:${GRID_COLS}`}>
-          {cells.map((c) => (
-            <span
-              class:list={['cell', c.filled && 'is-filled', c.today && 'is-today']}
-            />
-          ))}
-        </div>
-        <div class="streak-caption mono">
-          <span class="key"><span class="cell is-filled key-cell"></span> done</span>
-          <span class="key"><span class="cell key-cell"></span> missed</span>
-          <span class="key"><span class="cell is-today key-cell"></span> today</span>
-        </div>
-      </div>
-    </section>
-
-    {/* ── Start here (the lead entry) ───────────────────────────────────── */}
+  {/* ── Opening entry: the thesis, hand-set at the top of the page ──────── */}
+  <section class="entry entry-thesis" aria-labelledby="thesis">
+    <h1 id="thesis" class="thesis">
+      Small reps beat<br /><span class="thesis-em">motivation.</span>
+    </h1>
+    <p class="thesis-sub">
+      A working log of habits, focus, and follow-through — the practices that
+      hold when the mood to do them is gone. Written from experience, tested
+      in public.
+    </p>
     {lead && (
-      <section class="start" data-vertical={leadVertical} aria-labelledby="start-h">
-        <h2 id="start-h" class="strip-h mono">Start here</h2>
-        <a class="start-link" href={`/blog/${lead.id}`}>
-          <span class="start-kicker mono">
-            <span class="start-tick" aria-hidden="true"></span>
-            {verticalLabel(leadVertical)}
-          </span>
-          <span class="start-title">{lead.data.title}</span>
-          <span class="start-dek">{lead.data.description}</span>
-          <span class="start-meta mono">
-            <time datetime={lead.data.pubDate.toISOString()}>{lead.data.pubDate.toISOString().slice(0, 10)}</time>
-            <span aria-hidden="true">·</span>
-            <span>{leadRt}</span>
-          </span>
-        </a>
-      </section>
+      <a class="hero-cta" href={`/blog/${lead.id}`}>
+        Start with the latest
+        <span class="hero-cta-arrow" aria-hidden="true">→</span>
+      </a>
     )}
+  </section>
 
-    <hr class="hairline" />
+  {/* ── Signature: the streak, pasted into the margin like a habit chart ── */}
+  <section class="entry entry-streak" aria-label="Practice streak">
+    <div class="streak-card" aria-hidden="true">
+      <div class="streak-legend mono">
+        <span class="streak-legend-count">{doneCount}</span> days marked
+      </div>
+      <div class="streak-grid" style={`--cols:${GRID_COLS}`}>
+        {cells.map((c) => (
+          <span class:list={['cell', c.filled && 'is-filled', c.today && 'is-today']} />
+        ))}
+      </div>
+      <div class="streak-caption mono">
+        <span class="key"><span class="cell is-filled key-cell"></span> done</span>
+        <span class="key"><span class="cell key-cell"></span> missed</span>
+        <span class="key"><span class="cell is-today key-cell"></span> today</span>
+      </div>
+    </div>
+  </section>
 
-    {/* Stratum 1 — IN PROGRESS. */}
-    {inProgress.length > 0 && (
-      <section class="stratum stratum-progress" aria-labelledby="s-progress">
-        <h2 id="s-progress" class="strip-h mono">In progress</h2>
-        <ul class="progress-list">
-          {inProgress.map((s) => (
-            <li class="progress-row">
-              <a class="progress-link" href={`/series/${s.slug}/`}>
-                <span class="progress-name">{s.name}</span>
-                <span class="progress-meta mono">part {s.published} of {s.total}</span>
-                <span class="progress-spine-mount">
-                  <SeriesSpine
-                    total={s.total}
-                    published={s.published}
-                    current={s.current}
-                    size="md"
-                  />
-                </span>
-                <span class="progress-ago mono">{ago(s.latest)}</span>
-              </a>
-            </li>
-          ))}
-        </ul>
-      </section>
-    )}
+  {/* ── Start here (the lead entry) ───────────────────────────────────── */}
+  {lead && (
+    <section class="entry start" data-vertical={leadVertical} aria-labelledby="start-h">
+      <h2 id="start-h" class="entry-h mono">Start here</h2>
+      <a class="start-link" href={`/blog/${lead.id}`}>
+        <span class="start-kicker mono">
+          <span class="start-tick" aria-hidden="true"></span>
+          {verticalLabel(leadVertical)}
+        </span>
+        <span class="start-title">{lead.data.title}</span>
+        <span class="start-dek">{lead.data.description}</span>
+        <span class="start-meta mono">
+          <time datetime={lead.data.pubDate.toISOString()}>{lead.data.pubDate.toISOString().slice(0, 10)}</time>
+          <span aria-hidden="true">·</span>
+          <span>{leadRt}</span>
+        </span>
+      </a>
+    </section>
+  )}
 
-    <hr class="hairline" />
-
-    {/* Stratum 2 — RECENT (the log). */}
-    <section class="stratum stratum-recent" aria-labelledby="s-recent">
-      <h2 id="s-recent" class="strip-h mono">Recent entries</h2>
-      <ul class="recent-list">
-        {recentPosts.map((p) => (
-          <li class="recent-row" data-vertical={postVertical(p)}>
-            <a class="recent-link" href={`/blog/${p.id}`}>
-              <time class="recent-date mono" datetime={p.data.pubDate.toISOString()}>
-                {p.data.pubDate.toISOString().slice(0, 10)}
-              </time>
-              <span class="recent-meat">
-                <span class="recent-kicker mono">
-                  <span class="recent-tick" aria-hidden="true"></span>{verticalLabel(postVertical(p))}
-                </span>
-                <span class="recent-title">{p.data.title}</span>
-                <span class="recent-dek">{p.data.description}</span>
+  {/* Stratum 1 — IN PROGRESS. */}
+  {inProgress.length > 0 && (
+    <section class="entry stratum-progress" aria-labelledby="s-progress">
+      <h2 id="s-progress" class="entry-h mono">In progress</h2>
+      <ul class="progress-list">
+        {inProgress.map((s) => (
+          <li class="progress-row">
+            <a class="progress-link" href={`/series/${s.slug}/`}>
+              <span class="progress-name">{s.name}</span>
+              <span class="progress-meta mono">part {s.published} of {s.total}</span>
+              <span class="progress-spine-mount">
+                <SeriesSpine total={s.total} published={s.published} current={s.current} size="md" />
               </span>
-              <span class="recent-rt mono">{p.data.readingTime ?? readingTimeFor(p)}</span>
+              <span class="progress-ago mono">{ago(s.latest)}</span>
             </a>
           </li>
         ))}
       </ul>
-      <p class="all-link">
-        <a href="/archive/">every entry in the archive →</a>
+    </section>
+  )}
+
+  {/* Stratum 2 — RECENT (the log). Date-stamped entries, dates hung in margin. */}
+  <section class="entry stratum-recent" aria-labelledby="s-recent">
+    <h2 id="s-recent" class="entry-h mono">Recent entries</h2>
+    <ul class="recent-list">
+      {recentPosts.map((p) => (
+        <li class="recent-row" data-vertical={postVertical(p)}>
+          <a class="recent-link" href={`/blog/${p.id}`}>
+            <time class="recent-date mono" datetime={p.data.pubDate.toISOString()}>
+              {p.data.pubDate.toISOString().slice(0, 10)}
+            </time>
+            <span class="recent-meat">
+              <span class="recent-kicker mono">
+                <span class="recent-tick" aria-hidden="true"></span>{verticalLabel(postVertical(p))}
+              </span>
+              <span class="recent-title">{p.data.title}</span>
+              <span class="recent-dek">{p.data.description}</span>
+            </span>
+            <span class="recent-rt mono">{p.data.readingTime ?? readingTimeFor(p)}</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+    <p class="all-link">
+      <a href="/archive/">every entry in the archive →</a>
+    </p>
+  </section>
+
+  {/* Stratum 3 — BY TOPIC. */}
+  {cats.length > 0 && (
+    <section class="entry stratum-cats" aria-labelledby="s-cats">
+      <h2 id="s-cats" class="entry-h mono">By topic</h2>
+      <p class="cats-row">
+        {cats.map((c, i) => (
+          <>
+            {i > 0 && <span class="cats-dot" aria-hidden="true">·</span>}
+            <a href={`/categories/${slugifyTag(c.category)}/`} class="cats-link" data-vertical={verticalFor(c.category)}>
+              <span class="cats-name">{c.category}</span>
+              <span class="cats-count mono">({c.count})</span>
+            </a>
+          </>
+        ))}
       </p>
     </section>
-
-    <hr class="hairline" />
-
-    {/* Stratum 3 — BY TOPIC. */}
-    {cats.length > 0 && (
-      <section class="stratum stratum-cats" aria-labelledby="s-cats">
-        <h2 id="s-cats" class="strip-h mono">By topic</h2>
-        <p class="cats-row">
-          {cats.map((c, i) => (
-            <>
-              {i > 0 && <span class="cats-dot" aria-hidden="true">·</span>}
-              <a href={`/categories/${slugifyTag(c.category)}/`} class="cats-link" data-vertical={verticalFor(c.category)}>
-                <span class="cats-name">{c.category}</span>
-                <span class="cats-count mono">({c.count})</span>
-              </a>
-            </>
-          ))}
-        </p>
-      </section>
-    )}
-  </div>
+  )}
 </BaseLayout>
 
 <style>
-  .container-page {
-    max-width: 1000px;
-    margin-inline: auto;
-    padding-inline: clamp(1.25rem, 4vw, 2rem);
-  }
-
-  /* ── Hero ──────────────────────────────────────────────────────────── */
-
-  .hero {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: clamp(2rem, 5vw, 3.5rem);
-    align-items: center;
-    padding-block: clamp(2.5rem, 7vw, 4.5rem) clamp(2rem, 5vw, 3.25rem);
-  }
-  @media (min-width: 880px) {
-    .hero { grid-template-columns: 1.05fr 0.95fr; }
-  }
-
-  .dateline {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 12px;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--ink-mute);
-    margin: 0 0 1.25rem;
-  }
-  .dateline-day { color: var(--ember); font-weight: 600; }
-  .dateline-sep { color: var(--rule-strong); }
+  /* ── Journal entries: each block sits on the ruled sheet ─────────────── */
+  .entry { padding-block: clamp(1.25rem, 3vw, 1.75rem); }
+  .entry-thesis { padding-top: clamp(0.5rem, 2vw, 1rem); }
 
   .thesis {
     font-family: var(--font-display);
     font-optical-sizing: auto;
     font-weight: 560;
-    font-size: clamp(2.75rem, 8vw, 4.75rem);
+    font-size: clamp(2.5rem, 11vw, 4rem);
     line-height: 0.98;
     letter-spacing: -0.02em;
     color: var(--ink);
     margin: 0;
   }
-  .thesis-em {
-    color: var(--brand);
-    font-style: italic;
-    font-weight: 480;
-  }
+  .thesis-em { color: var(--brand); font-style: italic; font-weight: 480; }
   .thesis-sub {
     font-family: var(--font-body);
-    font-size: clamp(1.0625rem, 1.8vw, 1.25rem);
+    font-size: clamp(1.0625rem, 2vw, 1.2rem);
     line-height: 1.55;
     color: var(--ink-mute);
-    margin: 1.5rem 0 0;
+    margin: 1.25rem 0 0;
     max-width: 42ch;
   }
   .hero-cta {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    margin-top: 1.75rem;
-    padding: 0.6rem 1.15rem;
+    margin-top: 1.5rem;
+    padding: 0.55rem 1.1rem;
     border-radius: var(--radius-button);
     background: var(--brand);
     color: var(--color-accent-fg);
@@ -341,92 +279,53 @@ const jsonLd = {
   .hero-cta-arrow { transition: transform var(--dur-fast) var(--ease-out); }
   .hero-cta:hover .hero-cta-arrow { transform: translateX(3px); }
 
-  /* ── Signature: streak grid ────────────────────────────────────────── */
-
-  .hero-grid-wrap {
-    border: 1px solid var(--rule);
-    border-radius: var(--radius-card);
-    background: var(--paper-2);
-    padding: clamp(1rem, 3vw, 1.5rem);
+  /* ── Signature: streak card, taped into the page ─────────────────────── */
+  .streak-card {
+    border: 1px solid var(--rule-strong);
+    background: var(--paper);
+    padding: clamp(1rem, 3vw, 1.35rem);
+    box-shadow: 2px 3px 0 color-mix(in oklab, var(--rule-strong) 60%, transparent);
+    transform: rotate(-0.5deg);
   }
   .streak-legend {
-    font-size: 11px;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--ink-mute);
-    margin-bottom: 0.875rem;
+    font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--ink-mute); margin-bottom: 0.75rem;
   }
   .streak-legend-count { color: var(--ink); font-weight: 600; }
-  .streak-grid {
-    display: grid;
-    grid-template-columns: repeat(var(--cols, 21), 1fr);
-    gap: clamp(3px, 0.8vw, 5px);
-  }
+  .streak-grid { display: grid; grid-template-columns: repeat(var(--cols, 21), 1fr); gap: clamp(3px, 0.8vw, 5px); }
   .cell {
-    aspect-ratio: 1;
-    border-radius: 3px;
-    background: color-mix(in oklab, var(--rule) 55%, var(--paper-2));
+    aspect-ratio: 1; border-radius: 3px;
+    background: color-mix(in oklab, var(--rule) 55%, var(--paper));
     animation: cell-in var(--dur-slow) var(--ease-out) both;
   }
-  .cell.is-filled { background: color-mix(in oklab, var(--brand) 78%, var(--paper-2)); }
-  .cell.is-today {
-    background: var(--ember);
-    box-shadow: 0 0 0 2px color-mix(in oklab, var(--ember) 35%, transparent);
-  }
-  @keyframes cell-in {
-    from { opacity: 0; transform: scale(0.4); }
-    to { opacity: 1; transform: scale(1); }
-  }
+  .cell.is-filled { background: color-mix(in oklab, var(--brand) 78%, var(--paper)); }
+  .cell.is-today { background: var(--ember); box-shadow: 0 0 0 2px color-mix(in oklab, var(--ember) 35%, transparent); }
+  @keyframes cell-in { from { opacity: 0; transform: scale(0.4); } to { opacity: 1; transform: scale(1); } }
   .streak-caption {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.875rem;
-    margin-top: 0.875rem;
-    font-size: 10.5px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--ink-mute);
+    display: flex; flex-wrap: wrap; gap: 0.875rem; margin-top: 0.875rem;
+    font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-mute);
   }
   .streak-caption .key { display: inline-flex; align-items: center; gap: 0.375rem; }
   .key-cell { width: 10px; height: 10px; aspect-ratio: auto; animation: none; display: inline-block; }
+  @media (prefers-reduced-motion: reduce) { .cell { animation: none; } .streak-card { transform: none; } }
 
-  @media (prefers-reduced-motion: reduce) {
-    .cell { animation: none; }
-  }
-
-  /* ── Strip headings (shared) ───────────────────────────────────────── */
-
-  .strip-h {
+  /* ── Section headings: a torn label on the line ──────────────────────── */
+  .entry-h {
     font-family: var(--font-utility);
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.18em;
-    color: var(--ink-mute);
-    font-weight: 600;
-    margin: 0 0 1.25rem;
-    display: flex;
-    align-items: center;
-    gap: 0.625rem;
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.18em;
+    color: var(--ink-mute); font-weight: 600;
+    margin: 0 0 1rem;
+    display: flex; align-items: center; gap: 0.625rem;
   }
-  .strip-h::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--rule);
-  }
+  .entry-h::after { content: ''; flex: 1; height: 1px; background: var(--rule); }
 
-  /* ── Start here ────────────────────────────────────────────────────── */
-
-  .start {
-    --v: var(--v-personal);
-    padding-block: clamp(1.75rem, 4vw, 2.5rem) 0.5rem;
-    border-top: 2px solid var(--ink);
-  }
+  /* ── Start here ──────────────────────────────────────────────────────── */
+  .start { --v: var(--v-personal); border-top: 2px solid var(--ink); }
   .start[data-vertical='dev'] { --v: var(--v-dev); }
   .start[data-vertical='finance'] { --v: var(--v-finance); }
   .start[data-vertical='culture'] { --v: var(--v-culture); }
   .start[data-vertical='health'] { --v: var(--v-health); }
-  .start-link { display: grid; gap: 0.625rem; color: var(--ink); text-decoration: none; }
+  .start-link { display: grid; gap: 0.5rem; color: var(--ink); text-decoration: none; }
   .start-kicker {
     display: inline-flex; align-items: center; gap: 0.5rem;
     font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--v); font-weight: 600;
@@ -434,69 +333,32 @@ const jsonLd = {
   .start-tick { width: 8px; height: 8px; border-radius: 2px; background: var(--v); flex: 0 0 auto; }
   .start-title {
     font-family: var(--font-display);
-    font-weight: 540;
-    font-size: clamp(1.75rem, 4vw, 2.5rem);
-    letter-spacing: -0.018em;
-    line-height: 1.08;
-    max-width: 22ch;
+    font-weight: 540; font-size: clamp(1.6rem, 5vw, 2.2rem);
+    letter-spacing: -0.018em; line-height: 1.1; max-width: 22ch;
   }
   .start-link:hover .start-title { color: var(--brand); }
-  .start-dek {
-    font-family: var(--font-body);
-    font-size: 1.125rem;
-    line-height: 1.5;
-    color: var(--ink-mute);
-    max-width: 60ch;
-  }
+  .start-dek { font-family: var(--font-body); font-size: 1.0625rem; line-height: 1.5; color: var(--ink-mute); }
   .start-meta { display: inline-flex; gap: 0.5rem; font-size: 11px; letter-spacing: 0.06em; color: var(--ink-mute); }
 
-  /* ── Strata ────────────────────────────────────────────────────────── */
-
-  .stratum { padding-block: 1.75rem; }
-
-  .progress-list {
-    list-style: none; padding: 0; margin: 0;
-    display: flex; flex-direction: column; gap: 0.625rem;
-  }
+  /* ── In progress ─────────────────────────────────────────────────────── */
+  .progress-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.5rem; }
   .progress-link {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto auto auto;
-    gap: 1rem;
-    align-items: baseline;
-    color: var(--ink);
-    text-decoration: none;
-    padding-block: 0.5rem;
+    display: grid; grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas: 'name ago' 'meta spine';
+    gap: 0.25rem 1rem; align-items: baseline;
+    color: var(--ink); text-decoration: none; padding-block: 0.4rem;
   }
-  .progress-link:hover,
-  .progress-link:hover .progress-meta,
-  .progress-link:hover .progress-ago { color: var(--brand); }
+  .progress-link:hover, .progress-link:hover .progress-meta, .progress-link:hover .progress-ago { color: var(--brand); }
   .progress-name {
-    font-family: var(--font-display);
-    font-size: 1.125rem;
-    font-weight: 560;
-    letter-spacing: -0.01em;
+    grid-area: name; font-family: var(--font-display); font-size: 1.1rem; font-weight: 560; letter-spacing: -0.01em;
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
-  .progress-meta, .progress-ago {
-    font-family: var(--font-utility);
-    font-size: 11px; letter-spacing: 0.06em; color: var(--ink-mute);
-  }
-  .progress-spine-mount { display: inline-flex; }
+  .progress-meta { grid-area: meta; }
+  .progress-spine-mount { grid-area: spine; display: inline-flex; justify-content: flex-end; }
+  .progress-ago { grid-area: ago; text-align: right; }
+  .progress-meta, .progress-ago { font-family: var(--font-utility); font-size: 11px; letter-spacing: 0.06em; color: var(--ink-mute); }
 
-  @media (max-width: 640px) {
-    .progress-link {
-      grid-template-columns: minmax(0, 1fr) auto;
-      grid-template-areas: 'name ago' 'meta meta' 'spine spine';
-      row-gap: 0.25rem;
-    }
-    .progress-name { grid-area: name; }
-    .progress-meta { grid-area: meta; }
-    .progress-spine-mount { grid-area: spine; }
-    .progress-ago { grid-area: ago; text-align: right; }
-  }
-
-  /* ── Recent (the log) ──────────────────────────────────────────────── */
-
+  /* ── Recent (the log): dates hung in the red margin ──────────────────── */
   .recent-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; }
   .recent-row {
     --v: var(--v-personal);
@@ -509,74 +371,39 @@ const jsonLd = {
   .recent-row:last-child { border-bottom: 0; }
   .recent-link {
     display: grid;
-    grid-template-columns: 104px minmax(0, 1fr) auto;
-    gap: 1.25rem;
-    align-items: baseline;
-    color: var(--ink);
-    text-decoration: none;
-    padding-block: 1rem;
-    padding-left: 0.75rem;
-    margin-left: -0.75rem;
-    border-left: 2px solid transparent;
-    transition: border-color var(--dur-fast) ease;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas: 'date rt' 'meat meat';
+    gap: 0.15rem 1rem; align-items: baseline;
+    color: var(--ink); text-decoration: none; padding-block: 0.9rem;
   }
-  .recent-link:hover { border-left-color: var(--v); }
   .recent-link:hover .recent-title,
   .recent-link:hover .recent-date,
   .recent-link:hover .recent-rt { color: var(--brand); }
   .recent-kicker {
     display: inline-flex; align-items: center; gap: 0.375rem;
-    font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
-    color: var(--v); font-weight: 600;
+    font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--v); font-weight: 600;
   }
   .recent-tick { width: 6px; height: 6px; border-radius: 2px; background: var(--v); flex: 0 0 auto; }
   .recent-date {
-    color: var(--ink-mute);
-    font-family: var(--font-utility);
-    font-size: 12px; letter-spacing: 0.02em;
-    position: relative; padding-left: 0.875rem;
+    grid-area: date; color: var(--ink-mute); font-family: var(--font-utility);
+    font-size: 12px; letter-spacing: 0.02em; position: relative; padding-left: 0.875rem;
   }
   .recent-date::before {
     content: ''; position: absolute; left: 0; top: 0.15em;
     width: 3px; height: 0.7em; border-radius: 1px; background: var(--v);
   }
-  .recent-meat { display: flex; flex-direction: column; gap: 0.2rem; min-width: 0; }
-  .recent-title {
-    font-family: var(--font-display);
-    font-size: 1.1875rem; font-weight: 540; letter-spacing: -0.01em;
-    line-height: 1.25;
-  }
+  .recent-rt { grid-area: rt; text-align: right; color: var(--ink-mute); font-family: var(--font-utility); font-size: 11px; white-space: nowrap; }
+  .recent-meat { grid-area: meat; display: flex; flex-direction: column; gap: 0.2rem; min-width: 0; }
+  .recent-title { font-family: var(--font-display); font-size: 1.2rem; font-weight: 540; letter-spacing: -0.01em; line-height: 1.25; }
   .recent-dek {
-    font-family: var(--font-body);
-    font-size: 15px; color: var(--ink-mute); line-height: 1.5;
-    display: -webkit-box; -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden;
+    font-family: var(--font-body); font-size: 15px; color: var(--ink-mute); line-height: 1.5;
+    display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden;
   }
-  .recent-rt {
-    color: var(--ink-mute); font-family: var(--font-utility);
-    font-size: 11px; letter-spacing: 0.02em; white-space: nowrap;
-  }
-
-  @media (max-width: 640px) {
-    .recent-link {
-      grid-template-columns: minmax(0, 1fr) auto;
-      grid-template-areas: 'date rt' 'meat meat';
-      row-gap: 0.25rem;
-    }
-    .recent-date { grid-area: date; }
-    .recent-rt { grid-area: rt; text-align: right; }
-    .recent-meat { grid-area: meat; }
-  }
-
   .all-link { margin: 1.25rem 0 0; font-family: var(--font-sans); font-size: 14px; }
-  .all-link a {
-    color: var(--ink-mute); text-decoration: underline;
-    text-underline-offset: 3px; text-decoration-color: var(--rule);
-  }
+  .all-link a { color: var(--ink-mute); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--rule); }
   .all-link a:hover { color: var(--brand); text-decoration-color: var(--brand); }
 
-  /* ── By topic ──────────────────────────────────────────────────────── */
-
+  /* ── By topic ────────────────────────────────────────────────────────── */
   .cats-row { margin: 0; line-height: 2.1; color: var(--ink); }
   .cats-link { --v: var(--v-personal); color: var(--ink); text-decoration: none; margin-inline: 0.125rem; }
   .cats-link[data-vertical='dev'] { --v: var(--v-dev); }
