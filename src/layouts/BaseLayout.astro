@@ -155,7 +155,7 @@ const ogImage = image ? new URL(image, 'https://self-dev-blog.oriz.in').toString
      gutter. The whole column is the notebook; masthead, entries and colophon
      all sit on the same ruled surface. */
   :global(:root) {
-    --journal-col: 660px;
+    --journal-col: 920px;
     --journal-gutter: 2.5rem;
     --journal-gutter-sm: 1.75rem;
     --journal-line: 1.9rem;
@@ -183,7 +183,7 @@ const ogImage = image ? new URL(image, 'https://self-dev-blog.oriz.in').toString
     background-position: 0 0, 0 0;
   }
   .journal-column {
-    max-width: var(--journal-col);
+    max-width: min(92vw, var(--journal-col));
     margin-inline: auto;
     padding: 0 1rem 0 var(--journal-gutter);
   }
